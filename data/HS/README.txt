@@ -1,4 +1,5 @@
-This zip file contains 50 recordings of heart sounds captured using a digital stethoscope from a clinical manikin. The dataset includes both individual and mixed recordings of heart and lung sounds, as well as normal and abnormal sounds, recorded from various anatomical chest locations.
+This zip file contains 50 recordings of heart sounds captured using a digital stethoscope from a clinical manikin. 
+The dataset includes both individual and mixed recordings of heart and lung sounds, as well as normal and abnormal sounds, recorded from various anatomical chest locations.
 
 Dataset Composition:
 Heart Sounds: 50 recordings

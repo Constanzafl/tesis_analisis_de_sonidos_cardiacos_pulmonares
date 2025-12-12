@@ -103,7 +103,7 @@ jupyter notebook
 
 ## 🎯 Opciones de Clasificación para la Tesis
 
-### Opción A: Clasificación Binaria (Recomendada para empezar)
+### Opción A: Clasificación Binaria 
 - **Clases:** Normal vs Patológico
 - **Ventajas:** Simple, buen baseline, menos desbalance
 - **Métricas:** Accuracy, Precision, Recall, F1, AUC-ROC
