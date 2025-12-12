@@ -1,0 +1,28 @@
+# Dependencias para Exploración del Dataset HLS-CMDS
+# Tesis: Clasificación de Sonidos Cardiopulmonares con ML
+# Instalar con: pip install -r requirements.txt
+
+# Core
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualización
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Procesamiento de Audio
+librosa>=0.10.0
+soundfile>=0.12.0      # Backend para librosa
+
+# Machine Learning (para fase de modelado)
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+lightgbm>=4.0.0
+
+# Jupyter (opcional, para notebooks interactivos)
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Utilidades
+tqdm>=4.65.0           # Barras de progreso
+joblib>=1.3.0          # Paralelización
