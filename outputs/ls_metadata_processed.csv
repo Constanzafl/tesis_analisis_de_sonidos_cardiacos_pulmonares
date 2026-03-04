@@ -1,0 +1,51 @@
+Gender,Lung Sound Type,Location,Lung Sound ID,binary_label,binary_class
+M,Normal,RUA,M_N_RUA,0,Normal
+F,Normal,LUA,F_N_LUA,0,Normal
+F,Normal,RMA,F_N_RMA,0,Normal
+F,Normal,LMA,F_N_LMA,0,Normal
+M,Normal,RLA,M_N_RLA,0,Normal
+M,Normal,LLA,M_N_LLA,0,Normal
+M,Pleural Rub,RMA,M_PR_RMA,1,Patológico
+M,Pleural Rub,LUA,M_PR_LUA,1,Patológico
+F,Rhonchi,LUA,F_R_LUA,1,Patológico
+M,Wheezing,LUA,M_W_LUA,1,Patológico
+M,Fine Crackles,LUA,M_C_LUA,1,Patológico
+M,Normal,LUA,M_N_LUA,0,Normal
+M,Coarse Crackles,LLA,M_G_LLA,1,Patológico
+M,Coarse Crackles,LUA,M_G_LUA,1,Patológico
+F,Fine Crackles,LUA,F_C_LUA,1,Patológico
+M,Coarse Crackles,RLA,M_G_RLA,1,Patológico
+F,Rhonchi,RLA,F_R_RLA,1,Patológico
+F,Wheezing,RUA,F_W_RUA,1,Patológico
+M,Pleural Rub,LLA,M_PR_LLA,1,Patológico
+M,Pleural Rub,LMA,M_PR_LMA,1,Patológico
+M,Rhonchi,RUA,M_R_RUA,1,Patológico
+M,Fine Crackles,RUA,M_C_RUA,1,Patológico
+M,Rhonchi,LUA,M_R_LUA,1,Patológico
+F,Pleural Rub,LMA,F_PR_LMA,1,Patológico
+F,Coarse Crackles,LMA,F_G_LMA,1,Patológico
+F,Coarse Crackles,RLA,F_G_RLA,1,Patológico
+M,Fine Crackles,RLA,M_C_RLA,1,Patológico
+F,Coarse Crackles,RMA,F_G_RMA,1,Patológico
+M,Wheezing,RLA,M_W_RLA,1,Patológico
+M,Rhonchi,RLA,M_R_RLA,1,Patológico
+F,Fine Crackles,RLA,F_C_RLA,1,Patológico
+M,Normal,RMA,M_N_RMA,0,Normal
+M,Rhonchi,LMA,M_R_LMA,1,Patológico
+F,Coarse Crackles,LLA,F_G_LLA,1,Patológico
+F,Rhonchi,LMA,F_R_LMA,1,Patológico
+F,Normal,LLA,F_N_LLA,0,Normal
+M,Wheezing,RUA,M_W_RUA,1,Patológico
+M,Normal,LMA,M_N_LMA,0,Normal
+F,Pleural Rub,LLA,F_PR_LLA,1,Patológico
+M,Wheezing,RMA,M_W_RMA,1,Patológico
+M,Pleural Rub,RUA,M_PR_RUA,1,Patológico
+M,Wheezing,LLA,M_W_LLA,1,Patológico
+M,Rhonchi,LLA,M_R_LLA,1,Patológico
+F,Normal,RLA,F_N_RLA,0,Normal
+M,Coarse Crackles,LMA,M_G_LMA,1,Patológico
+M,Wheezing,LMA, M_W_LMA,1,Patológico
+F,Normal,RUA,F_N_RUA,0,Normal
+M,Pleural Rub,RLA,M_PR_RLA,1,Patológico
+F,Coarse Crackles,LUA,F_G_LUA,1,Patológico
+F,Pleural Rub,LUA,F_PR_LUA,1,Patológico

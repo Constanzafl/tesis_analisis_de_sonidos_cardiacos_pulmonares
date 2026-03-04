@@ -1,0 +1,51 @@
+Gender,Heart Sound Type,Location,Heart Sound ID,binary_label,binary_class
+F,Normal,RC,F_N_RC,0,Normal
+F,Normal,LC,F_N_LC,0,Normal
+M,Normal,RUSB,M_N_RUSB,0,Normal
+F,Normal,LUSB,F_N_LUSB,0,Normal
+F,Normal,LLSB,F_N_LLSB,0,Normal
+F,Normal,Apex,F_N_A,0,Normal
+M,Late Diastolic Murmur,LC,M_LDM_LC,1,Patológico
+M,Mid Systolic Murmur,Apex,M_MSM_A,1,Patológico
+F,Normal,RUSB,F_N_RUSB,0,Normal
+F,Mid Systolic Murmur,Apex,F_MSM_A,1,Patológico
+M,Normal,LC,M_N_LC,0,Normal
+F,Late Systolic Murmur,LUSB,F_LSM_LUSB,1,Patológico
+M,Late Systolic Murmur,RUSB,M_LSM_RUSB,1,Patológico
+F,Atrial Fibrillation,Apex,F_AF_A,1,Patológico
+F,S4,RC,F_S4_RC,1,Patológico
+F,Early Systolic Murmur,RUSB,F_ESM_RUSB,1,Patológico
+F,Late Systolic Murmur,Apex,F_LSM_A,1,Patológico
+M,Mid Systolic Murmur,LUSB,M_MSM_LUSB,1,Patológico
+F,Early Systolic Murmur,LUSB,F_ESM_LUSB,1,Patológico
+M,Mid Systolic Murmur,RC,M_MSM_RC,1,Patológico
+M,Late Diastolic Murmur,LUSB,M_LDM_LUSB,1,Patológico
+M,Early Systolic Murmur,RUSB,M_ESM_RUSB,1,Patológico
+M,S3,LUSB,M_S3_LUSB,1,Patológico
+F,Late Diastolic Murmur,Apex,F_LDM_A,1,Patológico
+M,Early Systolic Murmur,LUSB,M_ESM_LUSB,1,Patológico
+F,S3,LLSB,F_S3_LLSB,1,Patológico
+M,Late Diastolic Murmur,LLSB,M_LDM_LLSB,1,Patológico
+F,Atrial Fibrillation,LUSB,F_AF_LUSB,1,Patológico
+F,Tachycardia,LC,F_T_RC,1,Patológico
+F,Tachycardia,Apex,F_T_A,1,Patológico
+F,Late Diastolic Murmur,LUSB,F_LDM_LUSB,1,Patológico
+F,S3,Apex,F_S3_A,1,Patológico
+M,S4,LUSB,M_S4_LUSB,1,Patológico
+M,AV Block,LLSB,M_AVB_LLSB,1,Patológico
+F,S3,LC,F_S3_LC,1,Patológico
+M,AV Block,Apex,M_AVB_A,1,Patológico
+M,Tachycardia,LUSB,M_T_LUSB,1,Patológico
+M,Atrial Fibrillation,LC,M_AF_LC,1,Patológico
+M,Late Systolic Murmur,LUSB,M_LSM_LUSB,1,Patológico
+F,Late Diastolic Murmur,LLSB,F_LDM_LLSB,1,Patológico
+F,Mid Systolic Murmur,LUSB,F_MSM_LUSB,1,Patológico
+F,Mid Systolic Murmur,LLSB,F_MSM_LLSB,1,Patológico
+M,AV Block,RC,M_AVB_RC,1,Patológico
+M,Normal,LLSB,M_N_LLSB,0,Normal
+M,Mid Systolic Murmur,RUSB,M_MSM_RUSB,1,Patológico
+M,S3,LLSB,M_S3_LLSB,1,Patológico
+F,Early Systolic Murmur,LLSB,F_ESM_LLSB,1,Patológico
+F,Late Systolic Murmur,LLSB,F_LSM_LLSB,1,Patológico
+M,Early Systolic Murmur,Apex,M_ESM_A,1,Patológico
+M,Atrial Fibrillation,RUSB,M_AF_RUSB,1,Patológico
