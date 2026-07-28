@@ -12,8 +12,12 @@
 #  - Se comparan modelos individuales y de ensemble, más un MLP chico.
 #  - Las DOS estrategias de balanceo (SMOTE y class_weight) se evalúan y se
 #    guardan en la misma corrida, en un único CSV con la columna `balanceo`.
+#  - La estimación honesta es la AGRUPADA POR CASO (ver celda correspondiente):
+#    las 50 grabaciones son género x patología x localización sobre un mismo
+#    maniquí, no 50 sujetos independientes.
 
 # %%
+import sys
 from pathlib import Path
 import warnings
 import numpy as np
@@ -28,11 +32,12 @@ from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import recall_score, make_scorer, confusion_matrix
 
-from imblearn.pipeline import Pipeline as ImbPipeline
-from imblearn.over_sampling import SMOTE
+ROOT = next(p for p in [Path.cwd(), *Path.cwd().parents] if (p / "src").is_dir())
+sys.path.insert(0, str(ROOT))
+from src.evaluation import RANDOM_STATE, bootstrap_auc_ci, case_groups, make_pipeline
+from src.paths import OUT_DIR
 
 warnings.filterwarnings("ignore")
-RANDOM_STATE = 42
 np.random.seed(RANDOM_STATE)
 
 # Modelos de boosting (opcionales: si no están instalados, se omiten)
@@ -50,8 +55,6 @@ except ImportError:
 
 # %%
 # ---------- Configuración ----------
-FEAT_DIR = Path("../outputs")          # dónde quedaron hs_features.csv / ls_features.csv
-OUT_DIR = Path("../outputs"); OUT_DIR.mkdir(exist_ok=True)
 BALANCE_MODES = ["smote", "class_weight"]   # ambas estrategias en una sola corrida
 N_SPLITS, N_REPEATS = 5, 10            # 5-fold x 10 repeticiones = 50 evaluaciones
 DROP_COLS = ["file_id", "label", "label_binary"]  # columnas que no son features
@@ -60,30 +63,19 @@ TARGET = "label_binary"               # 0 = Normal, 1 = Patológico
 
 # %%
 def load_xy(csv_name):
-    """Carga un CSV de features y devuelve X (features) e y (etiqueta binaria)."""
-    path = FEAT_DIR / csv_name
-    if not path.exists():                       # fallback a ../data por si acaso
-        path = Path("../data") / csv_name
-    df = pd.read_csv(path)
+    """Carga un CSV de features y devuelve X, y, los grupos (caso del maniquí)
+    y los nombres de las features."""
+    df = pd.read_csv(OUT_DIR / csv_name)
     y = df[TARGET].astype(int).values
+    groups = case_groups(df["file_id"])
     X = df.drop(columns=[c for c in DROP_COLS if c in df.columns])
     X = X.select_dtypes(include=[np.number])    # solo numéricas
-    return X.values, y, list(X.columns)
+    return X.values, y, groups, list(X.columns)
 
 
 # %%
-def make_pipeline(estimator, balance, force_smote=False):
-    """Arma un Pipeline: escalado -> (SMOTE opcional) -> modelo.
-    El escalado y el SMOTE se ajustan SOLO con el train de cada fold.
-    """
-    steps = [("scaler", StandardScaler())]
-    if balance == "smote" or force_smote:
-        # k_neighbors chico: la clase minoritaria en cada fold de train es muy pequeña
-        steps.append(("smote", SMOTE(k_neighbors=3, random_state=RANDOM_STATE)))
-    steps.append(("clf", estimator))
-    return ImbPipeline(steps)
-
-
+# El Pipeline (escalado -> balanceo -> modelo, ajustado solo con el train de cada
+# fold) vive en src/evaluation.py, compartido con 03_robustez_mix.
 def build_models(balance):
     """Devuelve un dict {nombre: pipeline} para la estrategia de balanceo dada.
     Bajo 'class_weight' los modelos que lo soportan usan class_weight='balanced';
@@ -191,8 +183,9 @@ def best_per_balance(df):
 
 # %%
 # ---------- Ejecución: Sonidos cardíacos (HS) ----------
-X_hs, y_hs, feat_names = load_xy("hs_features.csv")
-print(f"HS: X={X_hs.shape}, positivos(patológico)={int(y_hs.sum())}, negativos(normal)={int((y_hs==0).sum())}")
+X_hs, y_hs, g_hs, feat_names = load_xy("hs_features.csv")
+print(f"HS: X={X_hs.shape}, positivos(patológico)={int(y_hs.sum())}, negativos(normal)={int((y_hs==0).sum())}"
+      f", casos={len(set(g_hs))} (normales={len(set(g_hs[y_hs==0]))})")
 res_hs = evaluate_all(X_hs, y_hs, label="Sonidos cardíacos (HS)")
 best_hs = best_per_balance(res_hs)
 for b, m in best_hs.items():
@@ -202,13 +195,86 @@ save_results(res_hs, "results_hs.csv")
 
 # %%
 # ---------- Ejecución: Sonidos pulmonares (LS) ----------
-X_ls, y_ls, _ = load_xy("ls_features.csv")
-print(f"LS: X={X_ls.shape}, positivos(patológico)={int(y_ls.sum())}, negativos(normal)={int((y_ls==0).sum())}")
+X_ls, y_ls, g_ls, _ = load_xy("ls_features.csv")
+print(f"LS: X={X_ls.shape}, positivos(patológico)={int(y_ls.sum())}, negativos(normal)={int((y_ls==0).sum())}"
+      f", casos={len(set(g_ls))} (normales={len(set(g_ls[y_ls==0]))})")
 res_ls = evaluate_all(X_ls, y_ls, label="Sonidos pulmonares (LS)")
 best_ls = best_per_balance(res_ls)
 for b, m in best_ls.items():
     confusion_for_best(X_ls, y_ls, m, b, label="LS")
 save_results(res_ls, "results_ls.csv")
+
+
+# %% [markdown]
+# ## Validación agrupada por caso (estimación honesta)
+#
+# Las 50 grabaciones de cada dataset NO son 50 sujetos: el HLS-CMDS se registró
+# sobre un **maniquí clínico**, así que cada archivo es una combinación
+# `género × patología × localización`. Eso deja HS con 19 casos y LS con 12, y
+# solo **2 casos normales** en cada uno. Dos localizaciones del mismo caso están
+# correlacionadas, de modo que una partición por archivo puede poner una en
+# train y otra en test y sobreestimar el desempeño.
+#
+# `LeaveOneGroupOut` sobre `groups = género_tipo` deja afuera el caso completo.
+# Se reporta además el IC95% bootstrap del AUC: con n=50 el valor puntual solo
+# no es interpretable.
+
+# %%
+import matplotlib.pyplot as plt
+from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.metrics import roc_auc_score, roc_curve
+
+
+def oof_probas(pipe, X, y, cv, groups=None):
+    """Probabilidad out-of-fold de la clase patológica para cada muestra."""
+    return cross_val_predict(pipe, X, y, cv=cv, groups=groups,
+                             method="predict_proba", n_jobs=-1)[:, 1]
+
+
+def grouped_report(X, y, groups, label, csv_name):
+    """Compara AUC out-of-fold partiendo por archivo vs. por caso, con IC95%."""
+    skf = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
+    rows, probas = [], {}
+    for b in BALANCE_MODES:
+        for name, pipe in build_models(b).items():
+            p_file = oof_probas(pipe, X, y, skf)
+            p_grp = oof_probas(pipe, X, y, LeaveOneGroupOut(), groups)
+            auc_file, auc_grp = roc_auc_score(y, p_file), roc_auc_score(y, p_grp)
+            lo, hi = bootstrap_auc_ci(y, p_grp)
+            probas[f"{b}|{name}"] = p_grp
+            rows.append({"balanceo": b, "modelo": name,
+                         "AUC_por_archivo": auc_file, "AUC_agrupada": auc_grp,
+                         "IC95_bajo": lo, "IC95_alto": hi,
+                         "optimismo": auc_file - auc_grp})
+    df = pd.DataFrame(rows).sort_values("AUC_agrupada", ascending=False).reset_index(drop=True)
+    print(f"\n===== {label} — AUC agrupada por caso ({len(set(groups))} casos) =====")
+    print(df.round(3).to_string(index=False))
+    df.to_csv(OUT_DIR / csv_name, index=False)
+    return df, probas
+
+
+grp_hs, prob_hs = grouped_report(X_hs, y_hs, g_hs, "Sonidos cardíacos (HS)", "results_hs_grouped.csv")
+grp_ls, prob_ls = grouped_report(X_ls, y_ls, g_ls, "Sonidos pulmonares (LS)", "results_ls_grouped.csv")
+
+
+# %%
+# Optimismo de la partición por archivo: ROC del mejor modelo bajo ambos esquemas
+fig, axes = plt.subplots(1, 2, figsize=(11, 5))
+for ax, (X, y, g, df, label) in zip(axes, [(X_hs, y_hs, g_hs, grp_hs, "HS"),
+                                           (X_ls, y_ls, g_ls, grp_ls, "LS")]):
+    r = df.iloc[0]
+    pipe = build_models(r.balanceo)[r.modelo]
+    skf = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
+    for p, nombre, auc in [(oof_probas(pipe, X, y, skf), "por archivo", r.AUC_por_archivo),
+                           (oof_probas(pipe, X, y, LeaveOneGroupOut(), g), "por caso", r.AUC_agrupada)]:
+        fpr, tpr, _ = roc_curve(y, p)
+        ax.plot(fpr, tpr, lw=1.8, label=f"{nombre} — AUC={auc:.3f}")
+    ax.plot([0, 1], [0, 1], "k--", lw=0.8)
+    ax.set(xlabel="1 - Especificidad", ylabel="Sensibilidad",
+           title=f"{label} — {r.modelo} ({r.balanceo})\nIC95% agrupado [{r.IC95_bajo:.2f}, {r.IC95_alto:.2f}]")
+    ax.legend(loc="lower right", fontsize=9)
+fig.tight_layout()
+fig.savefig(OUT_DIR / "16_roc_agrupada_vs_archivo.png", dpi=150)
 
 
 # %%
@@ -217,9 +283,10 @@ save_results(res_ls, "results_ls.csv")
 # de test tiene 1-2 normales). LOOCV deja UNA muestra afuera por vez y se juntan
 # TODAS las probabilidades out-of-fold en una única curva ROC (pooled): una
 # estimación de AUC con menos varianza de partición que el promedio por fold.
-import matplotlib.pyplot as plt
+# Ojo: LOOCV parte por archivo, así que sigue sin controlar el caso del maniquí
+# (ver la celda de validación agrupada, que es la estimación conservadora).
 from sklearn.model_selection import LeaveOneOut
-from sklearn.metrics import roc_curve, roc_auc_score, average_precision_score
+from sklearn.metrics import average_precision_score
 
 
 def loocv_probas(X, y, balance):
@@ -236,8 +303,10 @@ for b in BALANCE_MODES:
     P = loocv_probas(X_hs, y_hs, b)
     for name in P.columns:
         probas[f"{b}|{name}"] = P[name].values
+        lo, hi = bootstrap_auc_ci(y_hs, P[name].values)
         rows.append({"balanceo": b, "modelo": name,
                      "AUC_pooled": roc_auc_score(y_hs, P[name]),
+                     "IC95_bajo": lo, "IC95_alto": hi,
                      "AP_pooled": average_precision_score(y_hs, P[name])})
 
 loocv_hs = pd.DataFrame(rows).sort_values("AUC_pooled", ascending=False).reset_index(drop=True)

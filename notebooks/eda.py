@@ -1,15 +1,15 @@
 # %% [markdown]
 # # Exploratory Data Analysis (EDA) - Dataset HLS-CMDS
-# 
-# **Tesis:** Clasificación de Sonidos Cardiopulmonares con Machine Learning  
-# **Autor:** María Constanza Florio  
-# **Programa:** Maestría en Ciencia de Datos - ITBA  
-# 
-# **Dataset:** HLS-CMDS (Heart and Lung Sounds from Clinical Manikin using Digital Stethoscope)  
+#
+# **Tesis:** Clasificación de Sonidos Cardiopulmonares con Machine Learning
+# **Autor:** María Constanza Florio
+# **Programa:** Maestría en Ciencia de Datos - ITBA
+#
+# **Dataset:** HLS-CMDS (Heart and Lung Sounds from Clinical Manikin using Digital Stethoscope)
 # **Fuente:** https://data.mendeley.com/datasets/8972jxbpmp/3
-# 
+#
 # ---
-# 
+#
 # ## Índice
 # 1. Setup y carga de datos
 # 2. Análisis estructural de los datos
@@ -44,12 +44,28 @@ plt.rcParams['figure.figsize'] = (12, 6)
 plt.rcParams['font.size'] = 11
 sns.set_style("whitegrid")
 
+# Ver todas las columnas completas
+pd.set_option('display.max_columns', None)
+
+# Ver el contenido completo de cada celda (sin truncar texto)
+pd.set_option('display.max_colwidth', None)
+
+# Ver todas las filas
+pd.set_option('display.max_rows', None)
+
+# Ancho total del display
+pd.set_option('display.width', None)
+
 # %%
-# Rutas
-DATA_DIR = Path("data")
-AUDIO_HS = DATA_DIR / "HS"
-AUDIO_LS = DATA_DIR / "LS"
-AUDIO_MIX = DATA_DIR / "Mix"
+# Rutas: se resuelven desde src/paths.py, así el notebook funciona igual
+# ejecutado desde la raíz del repo o desde notebooks/
+import sys
+
+ROOT = next(p for p in [Path.cwd(), *Path.cwd().parents] if (p / "src").is_dir())
+sys.path.insert(0, str(ROOT))
+from src.paths import DATA_DIR, OUT_DIR, AUDIO
+
+AUDIO_HS, AUDIO_LS, AUDIO_MIX = AUDIO["HS"], AUDIO["LS"], AUDIO["Mix"]
 
 # Cargar metadatos
 hs = pd.read_csv(DATA_DIR / "HS.csv")
@@ -59,7 +75,7 @@ mix = pd.read_csv(DATA_DIR / "Mix.csv")
 # %% [markdown]
 # ---
 # ## 2. Análisis estructural de los datos
-# 
+#
 # ### 2.1 Dimensiones y tipos de datos
 
 # %%
@@ -84,10 +100,16 @@ for name, df in datasets.items():
 hs.head(10)
 
 # %%
+hs.tail(10)
+
+# %%
 ls.head(10)
 
 # %%
 mix.head(10)
+
+# %%
+mix.tail(10)
 
 # %% [markdown]
 # ### 2.3 Valores nulos y duplicados
@@ -115,7 +137,7 @@ quality_check
 # %% [markdown]
 # ---
 # ## 3. Análisis de distribuciones
-# 
+#
 # ### 3.1 Distribución de clases - Heart Sounds
 
 # %%
@@ -140,7 +162,7 @@ ax2.pie(hs_counts.values, labels=hs_counts.index, autopct='%1.1f%%', colors=colo
 ax2.set_title('Proporción de clases')
 
 plt.tight_layout()
-plt.savefig('outputs/01_distribucion_heart_sounds.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "01_distribucion_heart_sounds.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 3.2 Distribución de clases - Lung Sounds
@@ -164,7 +186,7 @@ ax2.pie(ls_counts.values, labels=ls_counts.index, autopct='%1.1f%%', colors=colo
 ax2.set_title('Proporción de clases')
 
 plt.tight_layout()
-plt.savefig('outputs/02_distribucion_lung_sounds.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "02_distribucion_lung_sounds.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 3.3 Distribución de clases - Mixed Sounds
@@ -187,7 +209,7 @@ ax2.set_title(f'Mix - Lung Sound Types (n={len(mix)})')
 ax2.set_xlabel('Cantidad')
 
 plt.tight_layout()
-plt.savefig('outputs/03_distribucion_mixed_sounds.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "03_distribucion_mixed_sounds.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 3.4 Matriz de combinaciones en Mixed Sounds
@@ -200,7 +222,7 @@ fig, ax = plt.subplots(figsize=(12, 8))
 sns.heatmap(cross, annot=True, fmt='d', cmap='YlOrRd', ax=ax)
 ax.set_title('Combinaciones Heart Sound x Lung Sound en Mix')
 plt.tight_layout()
-plt.savefig('outputs/04_heatmap_combinaciones_mix.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "04_heatmap_combinaciones_mix.png", dpi=150, bbox_inches='tight')
 
 # %%
 cross
@@ -208,7 +230,7 @@ cross
 # %% [markdown]
 # ---
 # ## 4. Análisis de desbalance de clases
-# 
+#
 # ### 4.1 Métricas de desbalance
 
 # %%
@@ -283,7 +305,7 @@ for ax, (name, df, col) in zip(axes, [('Heart Sounds', hs, 'binary_class'),
         ax.text(i, v + 0.5, f'{v} ({v/len(df)*100:.1f}%)', ha='center')
 
 plt.tight_layout()
-plt.savefig('outputs/05_balance_binario.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "05_balance_binario.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 4.3 Resumen de desbalance
@@ -305,7 +327,7 @@ imbalance_summary
 # %% [markdown]
 # ---
 # ## 5. Análisis de variables categóricas
-# 
+#
 # ### 5.1 Distribución por género
 
 # %%
@@ -319,7 +341,7 @@ for ax, (name, df) in zip(axes, datasets.items()):
 
 plt.suptitle('Distribución por Género', fontsize=14, y=1.02)
 plt.tight_layout()
-plt.savefig('outputs/06_distribucion_genero.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "06_distribucion_genero.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 5.2 Distribución por localización anatómica
@@ -346,7 +368,7 @@ ax2.set_ylabel('Cantidad')
 ax2.tick_params(axis='x', rotation=45)
 
 plt.tight_layout()
-plt.savefig('outputs/07_distribucion_localizaciones.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "07_distribucion_localizaciones.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 5.3 Relación entre tipo de sonido y localización
@@ -359,7 +381,7 @@ fig, ax = plt.subplots(figsize=(10, 8))
 sns.heatmap(cross_hs_loc, annot=True, fmt='d', cmap='Blues', ax=ax)
 ax.set_title('Heart Sound Type vs Localización')
 plt.tight_layout()
-plt.savefig('outputs/08_heatmap_hs_location.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "08_heatmap_hs_location.png", dpi=150, bbox_inches='tight')
 
 # %%
 # Heatmap: Tipo de sonido vs Localización para Lung Sounds
@@ -369,12 +391,12 @@ fig, ax = plt.subplots(figsize=(12, 6))
 sns.heatmap(cross_ls_loc, annot=True, fmt='d', cmap='Greens', ax=ax)
 ax.set_title('Lung Sound Type vs Localización')
 plt.tight_layout()
-plt.savefig('outputs/09_heatmap_ls_location.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "09_heatmap_ls_location.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ---
 # ## 6. Análisis de señales de audio
-# 
+#
 # ### 6.1 Cargar y explorar un audio de ejemplo
 
 # %%
@@ -444,7 +466,7 @@ def plot_audio_analysis(filepath, title=None):
 # Analizar ejemplo de Heart Sound
 hs_example = list(AUDIO_HS.glob("*.wav"))[0]
 fig = plot_audio_analysis(hs_example, f"Heart Sound: {hs_example.stem}")
-plt.savefig('outputs/10_analisis_audio_hs_ejemplo.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "10_analisis_audio_hs_ejemplo.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 6.3 Comparación Normal vs Patológico
@@ -482,7 +504,7 @@ for row, (filepath, label) in enumerate([(normal_file, 'Normal'),
     axes[row, 2].set_title(f'{label} - MFCCs')
 
 plt.tight_layout()
-plt.savefig('outputs/11_comparacion_normal_patologico.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "11_comparacion_normal_patologico.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 6.4 Estadísticas de duración de audios
@@ -510,137 +532,53 @@ duration_stats
 # %% [markdown]
 # ---
 # ## 7. Feature Engineering exploratorio
-# 
+#
 # ### 7.1 Función de extracción de features
 
 # %%
-def extract_features(y, sr):
-    """
-    Extrae features de audio para clasificación.
-    
-    Features extraídas:
-    - MFCCs (13) + estadísticas (mean, std, max, min)
-    - Delta MFCCs
-    - Spectral: centroid, bandwidth, rolloff, contrast, flatness
-    - Zero crossing rate
-    - RMS energy
-    - Tempo
-    
-    Total: ~100 features
-    """
-    features = {}
-    
-    # === MFCCs ===
-    mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-    for i in range(13):
-        features[f'mfcc_{i+1}_mean'] = np.mean(mfccs[i])
-        features[f'mfcc_{i+1}_std'] = np.std(mfccs[i])
-        features[f'mfcc_{i+1}_max'] = np.max(mfccs[i])
-        features[f'mfcc_{i+1}_min'] = np.min(mfccs[i])
-    
-    # === Delta MFCCs ===
-    mfcc_delta = librosa.feature.delta(mfccs)
-    for i in range(13):
-        features[f'mfcc_delta_{i+1}_mean'] = np.mean(mfcc_delta[i])
-        features[f'mfcc_delta_{i+1}_std'] = np.std(mfcc_delta[i])
-    
-    # === Spectral Features ===
-    # Centroid
-    spec_cent = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
-    features['spectral_centroid_mean'] = np.mean(spec_cent)
-    features['spectral_centroid_std'] = np.std(spec_cent)
-    
-    # Bandwidth
-    spec_bw = librosa.feature.spectral_bandwidth(y=y, sr=sr)[0]
-    features['spectral_bandwidth_mean'] = np.mean(spec_bw)
-    features['spectral_bandwidth_std'] = np.std(spec_bw)
-    
-    # Rolloff
-    spec_rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr)[0]
-    features['spectral_rolloff_mean'] = np.mean(spec_rolloff)
-    features['spectral_rolloff_std'] = np.std(spec_rolloff)
-    
-    # Contrast
-    spec_contrast = librosa.feature.spectral_contrast(y=y, sr=sr)
-    for i in range(spec_contrast.shape[0]):
-        features[f'spectral_contrast_{i+1}_mean'] = np.mean(spec_contrast[i])
-        features[f'spectral_contrast_{i+1}_std'] = np.std(spec_contrast[i])
-    
-    # Flatness
-    spec_flat = librosa.feature.spectral_flatness(y=y)[0]
-    features['spectral_flatness_mean'] = np.mean(spec_flat)
-    features['spectral_flatness_std'] = np.std(spec_flat)
-    
-    # === Zero Crossing Rate ===
-    zcr = librosa.feature.zero_crossing_rate(y)[0]
-    features['zcr_mean'] = np.mean(zcr)
-    features['zcr_std'] = np.std(zcr)
-    
-    # === RMS Energy ===
-    rms = librosa.feature.rms(y=y)[0]
-    features['rms_mean'] = np.mean(rms)
-    features['rms_std'] = np.std(rms)
-    features['rms_max'] = np.max(rms)
-    
-    # === Tempo ===
-    tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
-    features['tempo'] = float(tempo) if np.isscalar(tempo) else float(tempo[0])
-    
-    return features
+# Extracción de características: definida UNA sola vez en src/features.py
+# (antes estaba duplicada en este notebook y en notebooks/feature_extraction.py,
+# que quedó desactualizado y se borró).
+from src.features import (
+    RANDOM_STATE, SR, N_MFCC, INCLUDE_TEMPO,
+    extract_features, normalize_lung_id, check_files, process_all_files,
+)
+
+np.random.seed(RANDOM_STATE)
 
 # %%
-# Test con un archivo
-y_test, sr_test = librosa.load(sample_file, sr=22050)
-sample_features = extract_features(y_test, sr_test)
-f"Features extraídas: {len(sample_features)}"
-
-# %%
-# Ver algunas features
-pd.Series(sample_features).head(20)
+# # Ver algunas features
+# pd.Series(sample_features).head(20)
 
 # %% [markdown]
 # ### 7.2 Extraer features de todo el dataset
 
 # %%
-from tqdm import tqdm
+# ## Uso (descomentar cuando se ejecute con los datos reales)
+#
+hs = pd.read_csv(DATA_DIR / "HS.csv")
+ls = pd.read_csv(DATA_DIR / "LS.csv")
 
-def process_all_files(metadata_df, audio_dir, id_col, label_col, binary_col=None):
-    """Extrae features de todos los archivos de un dataset."""
-    records = []
-    
-    for _, row in tqdm(metadata_df.iterrows(), total=len(metadata_df)):
-        filepath = audio_dir / f"{row[id_col]}.wav"
-        
-        if not filepath.exists():
-            continue
-        
-        try:
-            y, sr = librosa.load(filepath, sr=22050)
-            features = extract_features(y, sr)
-            features['file_id'] = row[id_col]
-            features['label'] = row[label_col]
-            if binary_col:
-                features['label_binary'] = row[binary_col]
-            records.append(features)
-        except Exception as e:
-            print(f"Error en {filepath}: {e}")
-    
-    return pd.DataFrame(records)
+# 1) Etiqueta binaria: 0 = Normal, 1 = Patológico
+hs["binary_label"] = (hs["Heart Sound Type"] != "Normal").astype(int)
+ls["binary_label"] = (ls["Lung Sound Type"]  != "Normal").astype(int)
 
-# %%
-# Extraer features - Heart Sounds
-hs_features = process_all_files(hs, AUDIO_HS, 'Heart Sound ID', 'Heart Sound Type', 'binary_label')
-hs_features.shape
+# 1.b) Reparar los IDs pulmonares (recupera los 15 archivos por nombre mal escrito)
+ls["Lung Sound ID"] = ls["Lung Sound ID"].map(normalize_lung_id)
 
-# %%
-# Extraer features - Lung Sounds
-ls_features = process_all_files(ls, AUDIO_LS, 'Lung Sound ID', 'Lung Sound Type', 'binary_label')
-ls_features.shape
+# 2) Diagnóstico de archivos ANTES de extraer
+check_files(hs, AUDIO["HS"], "Heart Sound ID")
+check_files(ls, AUDIO["LS"], "Lung Sound ID")   # ahora debe dar faltantes=0
 
-# %%
-# Guardar features extraídas
-hs_features.to_csv('outputs/hs_features.csv', index=False)
-ls_features.to_csv('outputs/ls_features.csv', index=False)
+# 3) Extracción (ahora reporta todo lo que se pierde)
+hs_features, hs_missing, hs_errors = process_all_files(
+    hs, AUDIO["HS"], "Heart Sound ID", "Heart Sound Type", "binary_label")
+ls_features, ls_missing, ls_errors = process_all_files(
+    ls, AUDIO["LS"], "Lung Sound ID", "Lung Sound Type", "binary_label")
+
+# 4) Guardar
+hs_features.to_csv(OUT_DIR / "hs_features.csv", index=False)
+ls_features.to_csv(OUT_DIR / "ls_features.csv", index=False)
 
 # %% [markdown]
 # ### 7.3 Estadísticas descriptivas de features
@@ -652,14 +590,14 @@ hs_features[feature_cols].describe().T
 # %% [markdown]
 # ---
 # ## 8. Correlación entre features
-# 
+#
 # ### 8.1 Matriz de correlación
 
 # %%
 # Seleccionar subset de features para visualización
 mfcc_cols = [c for c in feature_cols if 'mfcc' in c and 'delta' not in c and 'mean' in c]
 spectral_cols = [c for c in feature_cols if 'spectral' in c and 'mean' in c]
-other_cols = ['zcr_mean', 'rms_mean', 'tempo']
+other_cols = ['zcr_mean', 'rms_mean']
 
 selected_features = mfcc_cols + spectral_cols + other_cols
 
@@ -670,7 +608,7 @@ mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
 sns.heatmap(corr_matrix, mask=mask, annot=False, cmap='coolwarm', center=0, ax=ax)
 ax.set_title('Matriz de Correlación - Features Seleccionadas')
 plt.tight_layout()
-plt.savefig('outputs/12_correlacion_features.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "12_correlacion_features.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ### 8.2 Features más correlacionadas con la etiqueta binaria
@@ -685,7 +623,7 @@ correlations_sorted.head(20).plot(kind='barh', ax=ax, color='steelblue')
 ax.set_title('Top 20 Features más correlacionadas con la etiqueta binaria')
 ax.set_xlabel('|Correlación|')
 plt.tight_layout()
-plt.savefig('outputs/13_top_features_correlacion.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "13_top_features_correlacion.png", dpi=150, bbox_inches='tight')
 
 # %%
 # Ver correlaciones
@@ -705,7 +643,7 @@ for ax, feature in zip(axes.flat, top_features):
     ax.set_title(feature)
 
 plt.tight_layout()
-plt.savefig('outputs/14_boxplots_top_features.png', dpi=150, bbox_inches='tight')
+plt.savefig(OUT_DIR / "14_boxplots_top_features.png", dpi=150, bbox_inches='tight')
 
 # %% [markdown]
 # ---
@@ -756,9 +694,9 @@ for section, content in conclusions.items():
 
 # %%
 # Guardar con etiquetas
-hs.to_csv('outputs/hs_metadata_processed.csv', index=False)
-ls.to_csv('outputs/ls_metadata_processed.csv', index=False)
-mix.to_csv('outputs/mix_metadata_processed.csv', index=False)
+hs.to_csv(OUT_DIR / "hs_metadata_processed.csv", index=False)
+ls.to_csv(OUT_DIR / "ls_metadata_processed.csv", index=False)
+mix.to_csv(OUT_DIR / "mix_metadata_processed.csv", index=False)
 
 # %%
 # Resumen final
