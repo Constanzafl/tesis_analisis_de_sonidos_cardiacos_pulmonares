@@ -5,9 +5,12 @@
 # ahora no se usaban. Sirven para responder la pregunta clínicamente relevante:
 # *¿el clasificador sobrevive cuando el otro órgano suena encima?*
 #
-# **Qué NO son**: muestras nuevas. Verifiqué por hash que las componentes de las
-# mezclas salen de las mismas 50 grabaciones limpias (20 son bit-idénticas a un
-# archivo de HS/), así que usarlas para agrandar el n sería data leakage puro.
+# **Qué NO son**: muestras nuevas. Verifiqué por hash (sha256) que las componentes
+# de las mezclas salen de las mismas 50 grabaciones limpias: 53/145 componentes
+# cardíacas son bit-idénticas a un archivo de HS/ (y reciclan solo 32 archivos
+# limpios distintos de los 50), y 57/145 pulmonares a uno de LS/ (30 archivos
+# distintos). Usarlas para agrandar el n sería data leakage puro.
+# Las mezclas M####.wav en sí son señales nuevas: 0/145 coinciden con un limpio.
 #
 # **Integridad del metadato** (verificado sobre las 53 componentes cardíacas y 57
 # pulmonares que matchean exactamente por hash con un archivo limpio):

@@ -279,8 +279,9 @@ fig.savefig(OUT_DIR / "16_roc_agrupada_vs_archivo.png", dpi=150)
 
 # %%
 # ---------- LOOCV + ROC agrupada (pooled) — HS ----------
-# Con solo 9 casos normales, la especificidad por fold es muy inestable (cada fold
-# de test tiene 1-2 normales). LOOCV deja UNA muestra afuera por vez y se juntan
+# Con solo 9 GRABACIONES normales (que son apenas 2 casos: F_N y M_N), la
+# especificidad por fold es muy inestable (cada fold de test tiene 1-2 normales).
+# LOOCV deja UNA muestra afuera por vez y se juntan
 # TODAS las probabilidades out-of-fold en una única curva ROC (pooled): una
 # estimación de AUC con menos varianza de partición que el promedio por fold.
 # Ojo: LOOCV parte por archivo, así que sigue sin controlar el caso del maniquí

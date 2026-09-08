@@ -51,3 +51,8 @@ outputs/temp/
 # Archivos de configuración local
 config.local.py
 secrets.py
+# API key de Semantic Scholar
+.s2_key
+
+# Revision sistematica: notebook de busqueda + CSVs (solo local)
+articulos/
