@@ -38,22 +38,18 @@ TESIS_ANALISIS_SONIDOS/
 │   ├── LS.csv                     # Metadata Lung Sounds
 │   └── Mix.csv                    # Metadata Mixed
 │
-├── notebooks/                     # Análisis y experimentos
-│   ├── 01_eda.py                  # Exploratory Data Analysis
-│   ├── 02_feature_engineering.py  # Extracción de features
-│   ├── 03_baseline_models.py      # Modelos baseline
-│   ├── 04_ensemble_models.py      # Modelos ensemble
-│   └── 05_evaluation.py           # Evaluación final
+├── notebooks/                     # Análisis y experimentos (.ipynb)
+│   ├── eda.ipynb                  # Análisis exploratorio
+│   ├── 02_modeling.ipynb          # Comparación de modelos (versión anterior)
+│   ├── 03_robustez_mix.ipynb      # Robustez ante sonido superpuesto
+│   └── paso_a_paso/               # Notebooks didácticas, una por tema (ver su README)
 │
 ├── src/                           # Código reutilizable
-│   ├── __init__.py
-│   ├── features.py                # Funciones de extracción
-│   ├── models.py                  # Funciones de modelado
-│   └── utils.py                   # Utilidades
+│   ├── paths.py                   # Rutas del proyecto
+│   ├── features.py                # Extracción de características
+│   └── evaluation.py              # Pipeline, grupos por caso, IC bootstrap
 │
 ├── outputs/                       # Resultados (gráficos, CSVs)
-│   ├── figures/
-│   └── features/
 │
 ├── models/                        # Modelos entrenados (.pkl)
 │
@@ -100,11 +96,12 @@ Descargar de https://data.mendeley.com/datasets/8972jxbpmp/3 y colocar en `data/
 
 | # | Notebook | Descripción |
 |---|----------|-------------|
-| 01 | `01_eda.py` | Análisis exploratorio completo |
-| 02 | `02_feature_engineering.py` | Extracción de MFCCs, spectral features |
-| 03 | `03_baseline_models.py` | LogReg, SVM, Decision Tree |
-| 04 | `04_ensemble_models.py` | Random Forest, XGBoost, Voting |
-| 05 | `05_evaluation.py` | Comparación final, métricas |
+| — | `eda.ipynb` | Análisis exploratorio completo |
+| 02 | `02_modeling.ipynb` | Comparación de modelos (versión anterior) |
+| 03 | `03_robustez_mix.ipynb` | Robustez ante sonido superpuesto |
+| — | `paso_a_paso/` | Rehecho didáctico, una notebook por tema |
+
+Las features se regeneran con `python src/features.py`.
 
 ---
 
