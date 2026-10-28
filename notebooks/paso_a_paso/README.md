@@ -21,3 +21,17 @@ tus palabras, se pasa a la siguiente.
 | 10 | Comparación | Preprocesamientos × modelos: ¿qué importa más? |
 | 11 | Mezclas | ¿El preprocesamiento ayuda cuando suenan corazón y pulmón juntos? |
 | 12 | ICBHI 2017 | Validación externa en pacientes reales (pulmonar) |
+
+## Preprocesamientos candidatos (se comparan en la notebook 10)
+
+Fijados de antemano, con argumentos de la señal y clínicos (notebook 02), para
+no elegir "el que mejor dé" entre muchos.
+
+| Candidato | Cardíacos (HS) | Pulmonares (LS) | Por qué |
+|---|---|---|---|
+| Sin filtro | — | — | Referencia (lo que usa la tesis hoy) |
+| Limpieza mínima | pasa banda 20–1000 Hz + notch 146 Hz | pasa banda 20–1000 Hz + notch 146 Hz | Saca solo lo no fisiológico: retumbo profundo, siseo > 1100 Hz y el tono del equipo |
+| Banda clínica | pasa banda 25–400 Hz + notch 146 Hz | pasa banda 100–1000 Hz + notch 146 Hz | HS: rango habitual en fonocardiograma (verificar cita). LS: atenúa sonido cardíaco y retumbo |
+
+Cada candidato se prueba con y sin normalización de amplitud (RMS), para
+medir cuánto del resultado depende del volumen.
