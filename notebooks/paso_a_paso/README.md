@@ -55,6 +55,21 @@ Consecuencias:
 - Para ICBHI (validación externa) hay que imitar el modo diafragma
   (~100–500 Hz) y llevar a 4000 Hz.
 
+## Hallazgo sobre el "optimismo" (notebook 07)
+
+La diferencia "AUC por grabación − AUC por caso" no es solo fuga: también
+refleja el esquema de validación (dejar afuera grupos enteros de una clase).
+Un control con pseudo-casos al azar (mismo tamaño y clase, sin ser "hermanos")
+separa las dos cosas. Con regresión logística:
+
+| | Por grabación | Pseudo-caso (control) | Caso real |
+|---|---|---|---|
+| Pulmonares | 0,998 | 0,991 (0,97–1,00) | 0,967 → fuga real, chica (~0,02) |
+| Cardíacos | 0,711 | 0,621 (0,39–0,76) | 0,610 → sin fuga medible; la caída es del esquema |
+
+Hay que aplicar el mismo control a todos los modelos (notebook 11) antes de
+afirmar qué modelos "memorizan el caso" (tesis, 8.1.1 y 8.5.2).
+
 ## Correcciones pendientes para los archivos finales
 
 - Cargar a la frecuencia nativa (4000 Hz), ajustando el tamaño de trama en
