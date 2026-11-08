@@ -56,3 +56,7 @@ secrets.py
 
 # Revision sistematica: notebook de busqueda + CSVs (solo local)
 articulos/
+
+# Documentos de la tesis y artículos (PDF y Word): se manejan fuera del repo
+*.pdf
+*.docx
