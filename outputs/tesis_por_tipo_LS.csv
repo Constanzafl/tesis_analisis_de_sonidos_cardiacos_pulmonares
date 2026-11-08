@@ -1,0 +1,6 @@
+,Regresión logística,SVM lineal,SVM-RBF,Árbol de decisión,Random forest,XGBoost,LightGBM,Voting,MLP
+Roce pleural (9),0.997,1.0,0.932,0.639,0.858,0.806,0.772,0.96,0.969
+Crepitantes gruesos (9),1.0,1.0,0.997,0.694,0.949,0.855,0.802,1.0,1.0
+Roncus (8),1.0,1.0,1.0,0.764,0.981,0.924,0.903,1.0,1.0
+Sibilancias (7),1.0,0.988,0.98,0.806,0.948,0.881,0.877,1.0,0.956
+Crepitantes finos (5),1.0,1.0,0.967,0.772,0.889,0.894,0.783,0.978,0.922

@@ -26,6 +26,13 @@ tus palabras, se pasa a la siguiente.
 | 15 | Mezclas | ¿El preprocesamiento ayuda cuando suenan corazón y pulmón juntos? |
 | 16 | ICBHI 2017 | Validación externa en pacientes reales (pulmonar) |
 
+**Resultados para el documento:** `resultados_tesis.ipynb` reproduce las tablas
+y figuras nuevas de la versión 5 de la tesis (capítulos 6 y 9: los nueve
+modelos con la extracción corregida, la regresión logística en detalle, el AUC
+por tipo y los pseudo-casos). Las figuras quedan en `outputs/figuras_tesis/` y
+las tablas en `outputs/tesis_*.csv`. Las tablas y figuras del capítulo 7 salen
+de las notebooks 11 y 12, y las del umbral, de la 14.
+
 Las notebooks 12, 13 y 14 se comparan **cada una contra la línea de base de la
 11**, para medir cada cambio por separado (una cosa por vez). Desde la 11, los
 modelos son cuatro, elegidos por su tipo: regresión logística, SVM-RBF, random
