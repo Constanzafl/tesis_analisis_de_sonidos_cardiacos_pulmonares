@@ -17,9 +17,9 @@ tus palabras, se pasa a la siguiente.
 | 06 | Métricas | Matriz de confusión, sensibilidad, especificidad, F1, curva ROC y AUC: qué son y por qué se usan |
 | 07 | Validación | Por grabación (principal) y por caso (comparación) |
 | 08 | Modelo a fondo: regresión logística | Cómo funciona, qué es `C`, cómo leer los coeficientes |
-| 09 | Modelo a fondo: random forest | Del árbol al bosque, `max_depth`, `n_estimators`, importancia |
-| 10 | El resto de los modelos y el desbalance | SVM, boosting, voting, MLP por encima; `class_weight` vs SMOTE |
-| 11 | Comparación | Preprocesamientos × features × modelos: ¿qué importa más? |
+| 09 | Modelo a fondo: random forest (de consulta) | Del árbol al bosque; por qué tiene buen AUC y mala especificidad en cardíacos |
+| 10 | Todos los modelos: la línea de base | Los 9 modelos en pocas palabras, `class_weight` vs SMOTE, las mismas métricas para todos, por tipo de patología y control de pseudo-casos |
+| 11 | Preprocesamiento | Filtros candidatos y correcciones pendientes (4000 Hz, tramas del borde, ritmo): ¿qué cambia en cada modelo? |
 | 12 | Mezclas | ¿El preprocesamiento ayuda cuando suenan corazón y pulmón juntos? |
 | 13 | ICBHI 2017 | Validación externa en pacientes reales (pulmonar) |
 
@@ -55,20 +55,64 @@ Consecuencias:
 - Para ICBHI (validación externa) hay que imitar el modo diafragma
   (~100–500 Hz) y llevar a 4000 Hz.
 
-## Hallazgo sobre el "optimismo" (notebook 07)
+## Hallazgo sobre el "optimismo" (notebooks 07, 09 y 10)
 
 La diferencia "AUC por grabación − AUC por caso" no es solo fuga: también
 refleja el esquema de validación (dejar afuera grupos enteros de una clase).
 Un control con pseudo-casos al azar (mismo tamaño y clase, sin ser "hermanos")
-separa las dos cosas. Con regresión logística:
+separa las dos cosas:
 
-| | Por grabación | Pseudo-caso (control) | Caso real |
+| Modelo | | Por grabación | Pseudo-caso (control) | Caso real |
+|---|---|---|---|---|
+| Regresión logística | Pulmonares | 0,998 | 0,991 (0,97–1,00) | 0,967 → fuga real, chica (~0,02) |
+| Regresión logística | Cardíacos | 0,711 | 0,621 (0,39–0,76) | 0,610 → sin fuga medible; la caída es del esquema |
+| Random forest | Pulmonares | 0,949 | 0,842 (0,77–0,88) | 0,757 → fuga real grande (~0,09) |
+| Random forest | Cardíacos | 0,785 | 0,569 (0,43–0,74) | 0,645 → sin fuga medible; caída grande por el esquema |
+
+- El bosque con árboles completos se aprovecha más de la grabación "hermana"
+  (hojas puras ≈ copiar a la grabación más parecida). En pulmonares, la idea de
+  que "memoriza el caso" se sostiene.
+- En cardíacos hay solo dos casos normales (F_N: 6 grabaciones, M_N: 3). Al
+  dejar uno afuera se entrena con 3 o 6 normales y la escala de probabilidades
+  de los normales sube: el AUC cae sin que haya memorización.
+
+En la notebook 10 se aplicó el mismo control a los 9 modelos (versión
+corregida, `class_weight`, 5 sorteos):
+- **Pulmonares:** en casi todos, el caso real queda por debajo de todos los
+  pseudo-casos. La fuga es chica en la regresión logística (~0,02), intermedia
+  en el SVM-RBF, el Voting y el MLP (~0,04) y en el SVM lineal (~0,07), y
+  grande en el random forest (~0,10) y XGBoost (~0,11).
+- **Cardíacos:** ningún modelo muestra fuga medible; las caídas al validar por
+  caso vienen del esquema.
+
+## Hallazgo: tres configuraciones de la tesis que no hacían lo que parecían (notebook 10)
+
+| Modelo | Problema | Corrección | Efecto |
 |---|---|---|---|
-| Pulmonares | 0,998 | 0,991 (0,97–1,00) | 0,967 → fuga real, chica (~0,02) |
-| Cardíacos | 0,711 | 0,621 (0,39–0,76) | 0,610 → sin fuga medible; la caída es del esquema |
+| XGBoost | No acepta `class_weight`; en las filas "class_weight" entrenaba sin balanceo | `scale_pos_weight = normales / patológicos` | Especificidad de 0,58 a 0,75 (LS) y de 0,33 a 0,59 (HS), AUC parecido |
+| LightGBM | `min_child_samples=20` (por defecto): con ~40 grabaciones, árboles de una sola pregunta | `min_child_samples=5` | AUC de 0,87 a 0,90 (LS) y de 0,69 a 0,77 (HS) |
+| MLP | `early_stopping=True` aparta ~6 grabaciones y para a las 12–14 vueltas: casi no entrena | sin `early_stopping` | AUC de 0,44 a 0,94 (LS) y de 0,65 a 0,77 (HS) |
 
-Hay que aplicar el mismo control a todos los modelos (notebook 11) antes de
-afirmar qué modelos "memorizan el caso" (tesis, 8.1.1 y 8.5.2).
+Además, para los SVM se usa su puntaje (`decision_function`) y no las
+probabilidades de Platt, que con tan pocos datos se distorsionan.
+
+## Hallazgo: las arritmias quedan cerca del azar con todos los modelos (notebook 10)
+
+AUC de cada tipo de patología contra los normales: los soplos sistólicos
+precoces y tardíos y el diastólico tardío se distinguen bien (0,7–1,0 con la
+mayoría de los modelos), pero la fibrilación auricular (0,38–0,70) y el
+bloqueo AV (0,48–0,59) quedan cerca del azar con casi todos. Las features
+actuales no ven el ritmo, y ningún modelo lo compensa: hay que sumar las
+features de ritmo (notebook 04) en la notebook 11.
+
+## Hallazgo: AUC alto con especificidad casi nula (notebook 09)
+
+En cardíacos, el random forest de la tesis **ordena bien** (AUC ~0,8), pero les
+da a **todos** los normales una probabilidad mayor que 0,5: con el umbral 0,5,
+la especificidad es 0,07–0,11. Con árboles completos (`min_samples_leaf=1`) las
+hojas son puras y `class_weight` casi no actúa. Comparar solo por AUC escondía
+este problema. Para la notebook 11, fijadas de antemano: `min_samples_leaf`
+mayor que 1, SMOTE, o un umbral elegido dentro de la validación cruzada.
 
 ## Correcciones pendientes para los archivos finales
 
@@ -78,6 +122,9 @@ afirmar qué modelos "memorizan el caso" (tesis, 8.1.1 y 8.5.2).
 - Descartar las tramas del borde antes de calcular máximos y mínimos
   (notebook 03, sección 9.1).
 - La planitud espectral es ~0 a 22.050 Hz y no aporta información (sección 9.2).
+- Modelos: las tres correcciones de la notebook 10 (XGBoost con
+  `scale_pos_weight`, LightGBM con `min_child_samples=5`, MLP sin
+  `early_stopping`) y el puntaje de los SVM en lugar de sus probabilidades.
 
 ## Preprocesamientos candidatos (se comparan en la notebook 11)
 
