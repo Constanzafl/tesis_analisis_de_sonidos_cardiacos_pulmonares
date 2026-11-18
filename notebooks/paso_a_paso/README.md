@@ -27,16 +27,18 @@ tus palabras, se pasa a la siguiente.
 | 16 | ICBHI 2017 | Validación externa en pacientes reales (pulmonar) |
 
 **Resultados para el documento:** `resultados_tesis.ipynb` reproduce las tablas
-y figuras nuevas de la versión 5 de la tesis (capítulos 6 y 9: los nueve
-modelos con la extracción corregida, la regresión logística en detalle, el AUC
-por tipo y los pseudo-casos). Las figuras quedan en `outputs/figuras_tesis/` y
+y figuras nuevas de la tesis (capítulos 6 y 9: los cuatro modelos finales,
+regresión logística, SVM-RBF, random forest y MLP, con la extracción corregida;
+la regresión logística en detalle, el AUC por tipo y los pseudo-casos). Las figuras quedan en `outputs/figuras_tesis/` y
 las tablas en `outputs/tesis_*.csv`. Las tablas y figuras del capítulo 7 salen
 de las notebooks 11 y 12, y las del umbral, de la 14.
 
 Las notebooks 12, 13 y 14 se comparan **cada una contra la línea de base de la
 11**, para medir cada cambio por separado (una cosa por vez). Desde la 11, los
-modelos son cuatro, elegidos por su tipo: regresión logística, SVM-RBF, random
-forest y XGBoost, con `class_weight`.
+modelos son tres, elegidos por su tipo: regresión logística, SVM-RBF y random
+forest, con `class_weight`. La 14 y los resultados de la tesis suman el MLP (con
+SMOTE). XGBoost se usó en una versión anterior y se sacó al simplificar la
+comparación de la tesis a un modelo representativo de cada familia.
 
 **Criterio transversal:** además del resultado global normal/patológico, se
 reporta **por tipo de patología** (qué fracción de cada tipo se detecta). La
@@ -133,19 +135,18 @@ mayor que 1, SMOTE, o un umbral elegido dentro de la validación cruzada.
 
 Las tres correcciones de la extracción (cargar a 4000 Hz con tramas de la
 misma duración, sin relleno en los bordes, y la planitud que se arregla sola)
-se midieron con un diseño 2 × 2 y los cuatro modelos. AUC por grabación:
+se midieron con un diseño 2 × 2 y los tres modelos. AUC por grabación:
 
 | Modelo | Pulmonares: tesis → corregida | Cardíacos: tesis → corregida |
 |---|---|---|
 | Regresión logística | 1,00 → 1,00 | 0,68 → **0,83** (mejora real: +0,15, IC pareado +0,03 a +0,27) |
 | SVM-RBF | 0,98 → 0,98 | 0,73 → 0,83 (al borde: IC −0,01 a +0,24) |
 | Random forest | 0,95 → 0,93 | 0,79 → 0,82 |
-| XGBoost | 0,93 → 0,87 | 0,82 → 0,75 (al borde, y frágil: con tramas de 64 ms vuelve a 0,84) |
 
 - **Pulmonares:** el resultado de la tesis no dependía de estos errores.
 - **Cardíacos:** los modelos lineales pasan de los peores a estar arriba; la
   regresión logística queda con la mejor exactitud balanceada (0,78,
-  especificidad 0,70). Sigue sin haber un ganador claro (0,75–0,83, intervalos
+  especificidad 0,70). Sigue sin haber un ganador claro (0,82–0,83, intervalos
   superpuestos). La mejora viene sobre todo de cargar a 4000 Hz; el R3 y el
   soplo mesosistólico son los tipos que más mejoran.
 - **Los máximos y mínimos de MFCC "importantes" (notebooks 08 y 09) no eran el
@@ -155,7 +156,7 @@ se midieron con un diseño 2 × 2 y los cuatro modelos. AUC por grabación:
   70 %), y eran ruido: sacarlos ayuda a la regresión logística, que usa todas
   las features, y casi nada a los árboles, que eligen.
 - **Fuga por caso (pseudo-casos):** en pulmonares sigue siendo chica en la
-  regresión logística (~0,03); en los modelos de árboles se achica y ya no es
+  regresión logística (~0,03); en el random forest se achica y ya no es
   medible. En cardíacos, la regresión logística validada por caso pasa de 0,61
   a 0,73.
 - La línea de base corregida quedó en `outputs/hs_features_corregidas.csv` y
@@ -166,9 +167,9 @@ se midieron con un diseño 2 × 2 y los cuatro modelos. AUC por grabación:
 ## Hallazgo: filtros y normalización (notebook 12)
 
 Los tres candidatos fijados de antemano, con y sin normalización RMS, sobre la
-extracción corregida (40 comparaciones con bootstrap pareado; se leen los
-patrones que se repiten en los cuatro modelos):
-- **Cardíacos: la banda clínica de 25–400 Hz empeora a los cuatro modelos**
+extracción corregida (30 comparaciones con bootstrap pareado; se leen los
+patrones que se repiten en los tres modelos):
+- **Cardíacos: la banda clínica de 25–400 Hz empeora a los tres modelos**
   (el random forest, de 0,82 a 0,66). Los patológicos tienen más energía entre
   400 y 1000 Hz (la fracción de energía entre 600 y 1000 Hz es la que más
   separa sola, 0,80) y el filtro la borra; pierden sobre todo los soplos. Es una
@@ -177,8 +178,7 @@ patrones que se repiten en los cuatro modelos):
   con cortes de 100–200 Hz, todos los modelos quedan cerca del azar; el AUC sube
   hasta ~600 Hz y desde ahí queda plano, al nivel de no filtrar.
 - **Pulmonares: la banda clínica (100–1000 Hz) con normalización** no cambia la
-  regresión logística (~1,00) y mejora los modelos de árboles (random forest de
-  0,93 a 0,99, XGBoost de 0,87 a 0,96).
+  regresión logística (~1,00) y mejora el random forest (de 0,93 a 0,99).
 - **El resultado pulmonar no depende del volumen:** el volumen solo separa
   0,78; con banda clínica + RMS ninguna feature queda asociada al volumen
   original (|r| > 0,8) y el AUC no cae. Además, la fuga por caso deja de ser
@@ -192,7 +192,7 @@ patrones que se repiten en los cuatro modelos):
 ## Hallazgo: las features de ritmo simples no ayudan (notebook 13)
 
 Sumar las 5 features de ritmo de la notebook 04 a las 101 espectrales
-corregidas no cambia el AUC de ningún modelo (diferencias de −0,002 a +0,009,
+corregidas no cambia el AUC de ningún modelo (diferencias de +0,001 a +0,009,
 todos los intervalos pareados incluyen el 0). Por qué:
 - **Direcciones opuestas:** el modelo aprende la dirección de la mayoría de
   los patológicos (más eventos por segundo, intervalos más parejos); el
@@ -223,7 +223,7 @@ Youden (equilibrio) y tamizaje (sensibilidad de al menos 0,90).
 | Regresión logística | 0,86 / 0,70 | 0,79 / 0,70 | 0,89 / 0,56 |
 | SVM-RBF | 0,93 / 0,41 | **0,79 / 0,89** | 0,88 / 0,70 |
 | Random forest | 0,98 / **0,00** | 0,74 / 0,63 | 0,93 / 0,41 |
-| XGBoost | 0,83 / 0,41 | 0,69 / 0,59 | 0,92 / 0,22 |
+| MLP | 0,85 / 0,78 | 0,80 / 0,74 | 0,89 / 0,56 |
 
 - El random forest cardíaco pasa de no reconocer ningún normal a reconocer
   0,63 con Youden, con el mismo AUC. De los tres remedios fijados en las
@@ -245,9 +245,11 @@ Youden (equilibrio) y tamizaje (sensibilidad de al menos 0,90).
   93 (93 y 23 ms, como la tesis), `center=False` en todas las features (sin
   relleno en los bordes) y `n_bands=4` en el contraste espectral (5 bandas
   hasta 2000 Hz). La planitud se corrige sola. Quedan 101 features.
-- Modelos: las tres correcciones de la notebook 10 (XGBoost con
-  `scale_pos_weight`, LightGBM con `min_child_samples=5`, MLP sin
-  `early_stopping`) y el puntaje de los SVM en lugar de sus probabilidades.
+- Modelos: los cuatro de la tesis (regresión logística, SVM-RBF, random forest y
+  MLP), con la corrección del MLP de la notebook 10 (sin `early_stopping`) y el
+  puntaje de la SVM en lugar de sus probabilidades. XGBoost, LightGBM, el
+  Voting, el SVM lineal y el árbol de decisión ya no forman parte de la
+  comparación.
 
 ## Preprocesamientos candidatos (se comparan en la notebook 12)
 
